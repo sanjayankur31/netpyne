@@ -18,16 +18,71 @@ PYRcell['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
 PYRcell['secs']['dend']['mechs']['hh'] = {'gnabar': 0.12,'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanisms
 
 
-# In [17]: for seg in dend:
-#     ...:     print(seg.hh.gnabar)
-#     ...:     print(h.distance(seg) )
-#     ...:     exec("seg.hh.gnabar = 2*seg.hh.gnabar - np.exp(h.distance(seg))")
-#     ...:
-# 0.12
+# pass function as string for setting mechanisms. For example, distribute channels along a dendriteself.
+# example functtostr : {"gnabar":"05.-distanceToSoma*0.9"}
+# def _getDistanceString(distanceString, seg):
+#     '''
+#         Function: Determines neuron version of distance string specified for mech distribution
+#         Input: seg -
+#         function as tring for distribution of channels
+#         Output: none
+#     '''
+#
+#     # parentSec =
+#     if distanceString == 'pathDistanceFromSoma'):
+#         h.distance()
+    #     strFunc.replace('pathDistanceFromSoma', _getDistanceString('pathDistanceFromSoma', seg) )
+    #
+    # elif strFunc.find('euclideanDistanceFromSoma') != -1:
+    #     strFunc.replace('euclideanDistanceFromSoma', _getDistanceString('euclideanDistanceFromSoma', seg) )
+    #
+    # elif strFunc.find('pathDistanceFromBranchStart') != -1:
+    #     strFunc.replace('pathDistanceFromBranchStart', _getDistanceString('pathDistanceFromBranchStart', seg) )
+    #
+    # elif strFunc.find('euclideanDistanceFromBranchStart') != -1:
+    #     strFunc.replace('euclideanDistanceFromBranchStart', _getDistanceString('euclideanDistanceFromBranchStart', seg) )
 
+
+# pass function as string for setting mechanisms. For example, distribute channels along a dendriteself.
+# example functtostr : {"gnabar":"05.-distanceToSoma*0.9"}
+# def _mechStrToFunc(seg, mech, nseg, strVars, strFunc):
+#     '''
+#         Function: Distribute channels in section as per string function
+#         Input: seg -
+#         function as tring for distribution of channels
+#         Output: none
+#     '''
+#     # pathDistFromSoma , realDistFromSoma , pathDistFromBranchStart , pathDistFromTrunk
+#     # dend = sim.net.cells[0].secs['dend']['hObj']
+#     # soma = sim.net.cells[0].secs['soma']['hObj']
+#
+#     seg = sim.net.cells[0].secs['dend']['hObj']
+#     parentSec = h.SectionRef(sec=seg).parent
+#     mechDistribution = seg.psection()['density_mechs']['hh'][mech]
+#     seg.nseg = nseg
+#     segDistances = [ h.distance(seg) for seg in dend]
+#
+#     # strFunc = 'a + b*(np.exp(-distanceFromSoma))'
+#     # strFunc = 'a + b*(np.exp(-2*h.distance()))'
+#
+#     if strFunc.find('pathDistanceFromSoma') != -1:
+#         strFunc.replace('pathDistanceFromSoma', _getDistanceString('pathDistanceFromSoma', seg) )
+#
+#     elif strFunc.find('euclideanDistanceFromSoma') != -1:
+#         strFunc.replace('euclideanDistanceFromSoma', _getDistanceString('euclideanDistanceFromSoma', seg) )
+#
+#     elif strFunc.find('pathDistanceFromBranchStart') != -1:
+#         strFunc.replace('pathDistanceFromBranchStart', _getDistanceString('pathDistanceFromBranchStart', seg) )
+#
+#     elif strFunc.find('euclideanDistanceFromBranchStart') != -1:
+#         strFunc.replace('euclideanDistanceFromBranchStart', _getDistanceString('euclideanDistanceFromBranchStart', seg) )
+#
+#     lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function
+#     lambdaFunc = eval(lambdaStr)
+#
+#     evaluatedMech = lambdaFunc(strVars)
 
 netParams.cellParams['PYR'] = PYRcell
-
 
 ## Population parameters
 netParams.popParams['S'] = {'cellType': 'PYR', 'numCells': 1}
@@ -80,3 +135,37 @@ dend.psection()
 
 # check model output
 # sim.checkOutput('tut3')
+import numpy as np
+
+dend = sim.net.cells[0].secs['dend']['hObj']
+soma = sim.net.cells[0].secs['soma']['hObj']
+
+parentSec = h.SectionRef(sec=dend).parent # soma
+dend.nseg = 3
+mech = 'gnabar'
+mechDistribution = dend.psection()['density_mechs']['hh'][mech]
+# distance from trunk
+h.distance()
+#0.0
+h.distance([seg for seg in parentSec][0])
+# 9.4
+print( " segments in dendrite " + str([seg for seg in dend]) )
+#[compartCell0.dend(0.166667), compartCell0.dend(0.5), compartCell0.dend(0.833333)]
+print( " distances for segments in dendrite " + str([h.distance(seg) for seg in dend]))
+#[43.8, 93.8, 143.8]
+# exponential distribution
+strFunc = 'a+b*np.exp(-dist/100)'
+strVars = ['a','b','dist']
+lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc
+lambdaFunc = eval(lambdaStr)
+print( " applying exponential lambda function " + str([lambdaFunc(3,4, h.distance(seg)) for seg in dend]) )
+#[5.581303131429179, 4.565639491224026, 3.94960835348426]
+# linear distribution
+strFunc = 'a-b*dist'
+lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc
+lambdaFunc = eval(lambdaStr)
+print( " applying linear lambda function " + str([lambdaFunc(3,4, h.distance(seg)) for seg in dend]) )
+#[-172.2, -372.2, -572.2]
+# distance from soma
+h.distance([seg for seg in soma][0])
+#9.4
