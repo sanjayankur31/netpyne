@@ -157,17 +157,19 @@ def _mechStrToFunc(secLabel, mech, nseg, values, strVars, strFunc):
     # pathDistFromSoma , realDistFromSoma , pathDistFromBranchStart , pathDistFromTrunk
     # dend = sim.net.cells[0].secs['dend']['hObj']
     # soma = sim.net.cells[0].secs['soma']['hObj']
-    print (*values)
-    # mech = 'gnabar'
-    # sec = 'dend'
-    # nseg = 3
+    print (values)
 
     sec = sim.net.cells[0].secs[secLabel]['hObj']
     sec.nseg = nseg
 
     soma = sim.net.cells[0].secs['soma']['hObj']
-
     parentSec = h.SectionRef(sec=sec).parent
+
+    if values[2] == 'pathDistFromSoma':
+        values[2] = h.distance(1, sec=soma)
+    elif values[2] == 'pathDistFromParentSec':
+        values[2] = h.distance(1, sec=parentSec)
+
     mechDistribution = sec.psection()['density_mechs']['hh'][mech]
 
     segDistances = [ h.distance(seg) for seg in dend]
@@ -176,4 +178,8 @@ def _mechStrToFunc(secLabel, mech, nseg, values, strVars, strFunc):
     lambdaFunc = eval(lambdaStr)
     print( " applying exponential lambda function " + str([lambdaFunc(*values) for seg in dend]) )
 
-_mechStrToFunc('dend', 'gnabar', 3, [3,4, h.distance([seg for seg in soma][0])], ['a','b','dist'], 'a+b*np.exp(-dist/100)')
+_mechStrToFunc('dend', 'gnabar', 3, [3,4, h.distance(1, sec=soma) ], ['a','b','dist'], 'a+b*np.exp(-dist/100)')
+_mechStrToFunc('dend', 'gnabar', 3, [3,4, h.distance(1, sec=parentSec) ], ['a','b','dist'], 'a+b*np.exp(-dist/100)')
+
+_mechStrToFunc('dend', 'gnabar', 3, [3,4, 'pathDistFromSoma' ], ['a','b','dist'], 'a+b*np.exp(-dist/100)')
+_mechStrToFunc('dend', 'gnabar', 3, [3,4, 'pathDistFromParentSec' ], ['a','b','dist'], 'a+b*np.exp(-dist/100)')
