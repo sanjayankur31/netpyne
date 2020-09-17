@@ -17,6 +17,7 @@ PYRcell['secs']['dend']['topol'] = {'parentSec': 'soma', 'parentX': 1.0, 'childX
 PYRcell['secs']['dend']['mechs']['pas'] = {'g': 0.0000357, 'e': -70}
 PYRcell['secs']['dend']['mechs']['hh'] = {'gnabar': 0.12,'gkbar': 0.036, 'gl': 0.003, 'el': -70}      # soma hh mechanisms
 
+
 # pass function as string for setting mechanisms. For example, distribute channels along a dendriteself.
 # example functtostr : {"gnabar":"05.-distanceToSoma*0.9"}
 # def _getDistanceString(distanceString, seg):
@@ -41,80 +42,27 @@ PYRcell['secs']['dend']['mechs']['hh'] = {'gnabar': 0.12,'gkbar': 0.036, 'gl': 0
 #     elif strFunc.find('euclideanDistanceFromBranchStart') != -1:
 #         strFunc.replace('euclideanDistanceFromBranchStart', _getDistanceString('euclideanDistanceFromBranchStart', seg) )
 #
-# # pass function as string for setting mechanisms. For example, distribute channels along a dendriteself.
-# # example functtostr : {"gnabar":"05.-distanceToSoma*0.9"}
-# def _mechStrToFunc(seg, mech, nseg, strVars, strFunc):
-#     '''
-#         Function: Distribute channels in section as per string function
-#         Input: seg -
-#         function as tring for distribution of channels
-#         Output: none
-#     '''
-#     # pathDistFromSoma , realDistFromSoma , pathDistFromBranchStart , pathDistFromTrunk
-#     # dend = sim.net.cells[0].secs['dend']['hObj']
-#     # soma = sim.net.cells[0].secs['soma']['hObj']
-#     mech = 'gnabar'
-#     sec = 'dend'
-#     nseg = 3
-#
-#     sec = sim.net.cells[0].secs[secLabel]['hObj']
-#     seg.nseg = nseg
-#
-#     soma = sim.net.cells[0].secs['soma']['hObj']
-#
-#     parentSec = h.SectionRef(sec=seg).parent
-#     mechDistribution = seg.psection()['density_mechs']['hh'][mech]
-#
-#     segDistances = [ h.distance(seg) for seg in dend]
-
-dend.nseg = 3
-mechDistribution = dend.psection()['density_mechs']['hh'][mech]
-# distance from trunk
-h.distance()
-#0.0
-h.distance([seg for seg in parentSec][0])
-# 9.4
-print( " segments in dendrite " + str([seg for seg in dend]) )
-#[compartCell0.dend(0.166667), compartCell0.dend(0.5), compartCell0.dend(0.833333)]
-print( " distances for segments in dendrite " + str([h.distance(seg) for seg in dend]))
-#[43.8, 93.8, 143.8]
-# exponential distribution
-strFunc = 'a+b*np.exp(-dist/100)'
-strVars = ['a','b','dist']
-lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc
-lambdaFunc = eval(lambdaStr)
-print( " applying exponential lambda function " + str([lambdaFunc(3,4, h.distance(seg)) for seg in dend]) )
-#[5.581303131429179, 4.565639491224026, 3.94960835348426]
-# linear distribution
-strFunc = 'a-b*dist'
-lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc
-lambdaFunc = eval(lambdaStr)
-print( " applying linear lambda function " + str([lambdaFunc(3,4, h.distance(seg)) for seg in dend]) )
-#[-172.2, -372.2, -572.2]
-# distance from soma
-h.distance([seg for seg in soma][0])
-#9.4
-
-
+# pass function as string for setting mechanisms. For example, distribute channels along a dendriteself.
+# example functtostr : {"gnabar":"05.-distanceToSoma*0.9"}
     # strFunc = 'a + b*(np.exp(-distanceFromSoma))'
     # strFunc = 'a + b*(np.exp(-2*h.distance()))'
 
-    if strFunc.find('pathDistanceFromSoma') != -1:
-        strFunc.replace('pathDistanceFromSoma', _getDistanceString('pathDistanceFromSoma', seg) )
-
-    elif strFunc.find('euclideanDistanceFromSoma') != -1:
-        strFunc.replace('euclideanDistanceFromSoma', _getDistanceString('euclideanDistanceFromSoma', seg) )
-
-    elif strFunc.find('pathDistanceFromBranchStart') != -1:
-        strFunc.replace('pathDistanceFromBranchStart', _getDistanceString('pathDistanceFromBranchStart', seg) )
-
-    elif strFunc.find('euclideanDistanceFromBranchStart') != -1:
-        strFunc.replace('euclideanDistanceFromBranchStart', _getDistanceString('euclideanDistanceFromBranchStart', seg) )
-
-    lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function
-    lambdaFunc = eval(lambdaStr)
-
-    evaluatedMech = lambdaFunc(strVars)
+    # if strFunc.find('pathDistanceFromSoma') != -1:
+    #     strFunc.replace('pathDistanceFromSoma', _getDistanceString('pathDistanceFromSoma', seg) )
+    #
+    # elif strFunc.find('euclideanDistanceFromSoma') != -1:
+    #     strFunc.replace('euclideanDistanceFromSoma', _getDistanceString('euclideanDistanceFromSoma', seg) )
+    #
+    # elif strFunc.find('pathDistanceFromBranchStart') != -1:
+    #     strFunc.replace('pathDistanceFromBranchStart', _getDistanceString('pathDistanceFromBranchStart', seg) )
+    #
+    # elif strFunc.find('euclideanDistanceFromBranchStart') != -1:
+    #     strFunc.replace('euclideanDistanceFromBranchStart', _getDistanceString('euclideanDistanceFromBranchStart', seg) )
+    #
+    # lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc # convert to lambda function
+    # lambdaFunc = eval(lambdaStr)
+    #
+    # evaluatedMech = lambdaFunc(strVars)
 
 netParams.cellParams['PYR'] = PYRcell
 
@@ -160,11 +108,6 @@ simConfig.analysis['plot2Dnet'] = {'saveFig': True}                   # plot 2D 
 # Create network and run simulation
 sim.createSimulateAnalyze(netParams = netParams, simConfig = simConfig)
 
-dend = sim.net.cells[0].secs.dend.hObj
-dend.psection()
-dend.nseg = 3
-dend.psection()
-
 # import pylab; pylab.show()  # this line is only necessary in certain systems where figures appear empty
 
 # check model output
@@ -203,3 +146,34 @@ print( " applying linear lambda function " + str([lambdaFunc(3,4, h.distance(seg
 # distance from soma
 h.distance([seg for seg in soma][0])
 #9.4
+
+def _mechStrToFunc(secLabel, mech, nseg, values, strVars, strFunc):
+    '''
+        Function: Distribute channels in section as per string function
+        Input: seg -
+        function as tring for distribution of channels
+        Output: none
+    '''
+    # pathDistFromSoma , realDistFromSoma , pathDistFromBranchStart , pathDistFromTrunk
+    # dend = sim.net.cells[0].secs['dend']['hObj']
+    # soma = sim.net.cells[0].secs['soma']['hObj']
+    print (*values)
+    # mech = 'gnabar'
+    # sec = 'dend'
+    # nseg = 3
+
+    sec = sim.net.cells[0].secs[secLabel]['hObj']
+    sec.nseg = nseg
+
+    soma = sim.net.cells[0].secs['soma']['hObj']
+
+    parentSec = h.SectionRef(sec=sec).parent
+    mechDistribution = sec.psection()['density_mechs']['hh'][mech]
+
+    segDistances = [ h.distance(seg) for seg in dend]
+
+    lambdaStr = 'lambda ' + ','.join(strVars) +': ' + strFunc
+    lambdaFunc = eval(lambdaStr)
+    print( " applying exponential lambda function " + str([lambdaFunc(*values) for seg in dend]) )
+
+_mechStrToFunc('dend', 'gnabar', 3, [3,4, h.distance([seg for seg in soma][0])], ['a','b','dist'], 'a+b*np.exp(-dist/100)')
