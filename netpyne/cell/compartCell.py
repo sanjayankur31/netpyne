@@ -136,7 +136,7 @@ class CompartCell (Cell):
             if sim.cfg.createNEURONObj:
                 self.createNEURONObj(prop)  # add sections, mechanisms, synaptic mechanisms, geometry and topolgy specified by this property set
 
-    def __mechStrToFunc(sec, soma, mech, nseg = False, values, strVars = vars, strFunc = strFunc):
+    def __mechStrToFunc(sec, soma, mech,  values, strVars, strFunc, nseg = False):
         '''
             Function: Distribute channels in section as per string function
             Input: seg -
@@ -164,7 +164,8 @@ class CompartCell (Cell):
                 elif value == 'pathDistFromParentSec':
                     values[index] = h.distance(seg.x, sec=parentSec)
 
-            seg.x = lambdaFunc(*values)
+            cmd = 'seg.x = lambdaFunc(*values)' % (mech)
+            exec(cmd)
 
         return
 
@@ -440,7 +441,7 @@ class CompartCell (Cell):
                     if mechName not in sec['mechs']:
                         sec['mechs'][mechName] = Dict()
                     try:
-                        if mechName != 'distribution'
+                        if mechName != 'distribution':
                             sec['hObj'].insert(mechName)
                     except:
                         mechInsertError = True
@@ -448,7 +449,7 @@ class CompartCell (Cell):
                             print('# Error inserting %s mechanims in %s section! (check mod files are compiled)'%(mechName, sectName))
                         continue
 
-                    if mechName != 'distribution'
+                    if mechName != 'distribution':
                         for mechParamName,mechParamValue in mechParams.items():  # add params of the mechanism
                             mechParamValueFinal = mechParamValue
                             for iseg,seg in enumerate(sec['hObj']):  # set mech params for each segment
@@ -460,7 +461,7 @@ class CompartCell (Cell):
                                 if mechParamValueFinal is not None:  # avoid setting None values
                                     setattr(getattr(seg, mechName), mechParamName,mechParamValueFinal)
                     else:
-                        _mechStrToFunc(sec, self.soma, mechName, nseg = sec.nseg, mechParams["values"], mechParams["strVars"], mechParams["strFunc"]):
+                        __mechStrToFunc(sec, self.soma, mechName, mechParams["values"], mechParams["strVars"], mechParams["strFunc"], nseg = sec.nseg)
 
             # add ions
             if 'ions' in sectParams:
